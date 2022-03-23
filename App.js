@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import React, { useState } from "react";
 import {
   StyleSheet,
   ImageBackground,
@@ -11,20 +12,24 @@ import {
 import { Avatar } from "react-native-paper";
 import * as Speech from "expo-speech";
 
-export const App = () => {
+export default function App() {
+  const [onSpeaking, setOnSpeaking] = useState(false);
   const socialMediaHandler = (link) => {
-    console.log(link);
     Linking.openURL(link);
   };
 
   const apiHandler = async (param) => {
     try {
       const response = await fetch(
-        `https://v2.jokeapi.dev/joke/${param}?blacklistFlags=religious,sexist&type=twopart`
+        `https://v2.jokeapi.dev/joke/${param}?blacklistFlags=sexist&type=twopart`
       );
       const data = await response.json();
+      setOnSpeaking(true);
       Speech.speak(`Question : ${data.setup}.....`, { rate: 0.9 });
-      Speech.speak(`Answer : ..... ${data.delivery}`, { rate: 0.9 });
+      Speech.speak(`Answer : ..... ${data.delivery}`, {
+        rate: 0.9,
+        onDone: () => setOnSpeaking(false),
+      });
     } catch (err) {
       console.log(err);
     }
@@ -38,25 +43,29 @@ export const App = () => {
           style={styles.backgroundImage}
         >
           <TouchableOpacity
-            style={styles.button}
+            disabled={onSpeaking ? true : false}
+            style={onSpeaking ? styles.onSpeaking : styles.button}
             onPress={() => apiHandler("Programming")}
           >
             <Text style={styles.buttonText}>Tell Me A Programming Joke</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.button}
-            onPress={() => apiHandler("Miscellaneous")}
+            disabled={onSpeaking ? true : false}
+            style={onSpeaking ? styles.onSpeaking : styles.button}
+            onPress={() => apiHandler("Dark")}
           >
-            <Text style={styles.buttonText}>Tell Me A Miscellaneous Joke</Text>
+            <Text style={styles.buttonText}>Tell Me A Dark Joke</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.button}
+            disabled={onSpeaking ? true : false}
+            style={onSpeaking ? styles.onSpeaking : styles.button}
             onPress={() => apiHandler("Spooky")}
           >
             <Text style={styles.buttonText}>Tell Me A Spooky Joke</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.button}
+            disabled={onSpeaking ? true : false}
+            style={onSpeaking ? styles.onSpeaking : styles.button}
             onPress={() => apiHandler("Pun")}
           >
             <Text style={styles.buttonText}>Tell Me A Pun Joke</Text>
@@ -106,7 +115,7 @@ export const App = () => {
       <StatusBar style="auto" />
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -121,6 +130,16 @@ const styles = StyleSheet.create({
     width: null,
     justifyContent: "center",
     alignItems: "center",
+  },
+  onSpeaking: {
+    marginBottom: 40,
+    marginHorizontal: 20,
+    paddingVertical: 30,
+    paddingHorizontal: 50,
+    borderRadius: 15,
+    opacity: 0.7,
+
+    backgroundColor: "#1d1d3b",
   },
 
   button: {
