@@ -8,27 +8,33 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Text,
+  Alert,
 } from "react-native";
 import { Avatar } from "react-native-paper";
 import * as Speech from "expo-speech";
 
 export default function App() {
   const [onSpeaking, setOnSpeaking] = useState(false);
+  const [jokeText, setJokeText] = useState(null);
   const socialMediaHandler = (link) => {
     Linking.openURL(link);
   };
 
   const apiHandler = async (param) => {
+    setOnSpeaking(true);
     try {
       const response = await fetch(
-        `https://v2.jokeapi.dev/joke/${param}?blacklistFlags=sexist&type=twopart`
+        `https://v2.jokeapi.dev/joke/${param}?blacklistFlags=sexist,nsfw,explicit&type=twopart`
       );
       const data = await response.json();
-      setOnSpeaking(true);
-      Speech.speak(`Question : ${data.setup}.....`, { rate: 0.9 });
-      Speech.speak(`Answer : ..... ${data.delivery}`, {
+      const joke = data.setup + " " + data.delivery;
+      Alert.alert("Joke", joke);
+      Speech.speak(joke, {
         rate: 0.9,
-        onDone: () => setOnSpeaking(false),
+        onDone: () => {
+          setOnSpeaking(false);
+          setJokeText(null);
+        },
       });
     } catch (err) {
       console.log(err);
@@ -42,6 +48,8 @@ export default function App() {
           source={require("./assets/robot.gif")}
           style={styles.backgroundImage}
         >
+          {console.log(jokeText)}
+
           <TouchableOpacity
             disabled={onSpeaking ? true : false}
             style={onSpeaking ? styles.onSpeaking : styles.button}
@@ -56,6 +64,7 @@ export default function App() {
           >
             <Text style={styles.buttonText}>Tell Me A Dark Joke</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             disabled={onSpeaking ? true : false}
             style={onSpeaking ? styles.onSpeaking : styles.button}
@@ -124,6 +133,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     flex: 0.9,
   },
+
   backgroundImage: {
     flex: 1,
     height: null,
